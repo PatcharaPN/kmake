@@ -34,6 +34,8 @@ const YEAR_365_AMOUNT = 36500;
 const totalAmount =
   categories.reduce((sum, c) => sum + c.amount, 0) + YEAR_365_AMOUNT;
 
+const PIN_LENGTH = 6;
+
 const formatNumber = (n: number) =>
   n.toLocaleString("th-TH", {
     minimumFractionDigits: 2,
@@ -123,12 +125,100 @@ function Icon({ name, size = 25 }: { name: string; size?: number }) {
         </svg>
       );
 
+    case "backspace":
+      return (
+        <svg {...common}>
+          <path d="M9 5h11a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H9l-6-7z" />
+          <path d="m12 9 5 6m0-6-5 6" />
+        </svg>
+      );
+
+    case "close":
+      return (
+        <svg {...common}>
+          <path d="M5 5l14 14M19 5 5 19" />
+        </svg>
+      );
+
     default:
       return null;
   }
 }
 
-export default function CloudPocketPage() {
+/* ---------------- PIN SCREEN ---------------- */
+
+function PinScreen({ onSuccess }: { onSuccess: () => void }) {
+  const [pin, setPin] = useState("");
+
+  const pressDigit = (d: string) => {
+    if (pin.length >= PIN_LENGTH) return;
+
+    const next = pin + d;
+    setPin(next);
+
+    // mock: ใส่ครบกี่ตัวเลขก็ได้ ผ่านหมด
+    if (next.length === PIN_LENGTH) {
+      setTimeout(onSuccess, 250);
+    }
+  };
+
+  const backspace = () => setPin((p) => p.slice(0, -1));
+
+  const keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
+
+  return (
+    <main className="pin-screen">
+      <button
+        className="pin-close"
+        aria-label="Clear"
+        onClick={() => setPin("")}
+      >
+        <Icon name="close" size={22} />
+      </button>
+
+      <div className="pin-logo">
+        <span className="pin-logo-k">K</span>
+        <span className="pin-logo-plus">+</span>
+      </div>
+
+      <p className="pin-title">Please Enter Your PIN</p>
+
+      <div className="pin-dots">
+        {Array.from({ length: PIN_LENGTH }).map((_, i) => (
+          <span key={i} className={i < pin.length ? "dot filled" : "dot"} />
+        ))}
+      </div>
+
+      <div className="keypad">
+        {keys.map((k) => (
+          <button key={k} className="key" onClick={() => pressDigit(k)}>
+            {k}
+          </button>
+        ))}
+
+        <span className="key-empty" />
+
+        <button className="key" onClick={() => pressDigit("0")}>
+          0
+        </button>
+
+        <button className="key-back" aria-label="Delete" onClick={backspace}>
+          <Icon name="backspace" size={28} />
+        </button>
+      </div>
+
+      <button className="pin-forgot" onClick={() => alert("Forgot your PIN")}>
+        Forgot your PIN
+      </button>
+
+      <div className="home-indicator" />
+    </main>
+  );
+}
+
+/* ---------------- MAIN PAGE ---------------- */
+
+function CloudPocketHome() {
   const [activeTab, setActiveTab] = useState("Cloud Pocket");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
@@ -277,6 +367,22 @@ export default function CloudPocketPage() {
           </div>
         </div>
       )}
+    </main>
+  );
+}
+
+/* ---------------- ROOT ---------------- */
+
+export default function CloudPocketPage() {
+  const [authed, setAuthed] = useState(false);
+
+  return (
+    <>
+      {authed ? (
+        <CloudPocketHome />
+      ) : (
+        <PinScreen onSuccess={() => setAuthed(true)} />
+      )}
 
       <style jsx global>{`
         * {
@@ -310,6 +416,144 @@ export default function CloudPocketPage() {
           font-size: 0.65em;
           font-weight: 600;
           margin-right: 4px;
+        }
+
+        /* PIN SCREEN */
+
+        .pin-screen {
+          position: relative;
+          width: 100%;
+          max-width: 480px;
+          min-height: 100vh;
+          margin: 0 auto;
+          padding: 70px 20px 40px;
+          background: white;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          -webkit-tap-highlight-color: transparent;
+          user-select: none;
+        }
+
+        .pin-close {
+          position: absolute;
+          top: 22px;
+          right: 22px;
+          border: none;
+          background: transparent;
+          color: #8a929e;
+          padding: 4px;
+          display: grid;
+          place-items: center;
+        }
+
+        .pin-logo {
+          display: flex;
+          align-items: baseline;
+          font-size: 46px;
+          font-weight: 800;
+          line-height: 1;
+          margin-bottom: 14px;
+        }
+
+        .pin-logo-k {
+          color: #3a3f47;
+          letter-spacing: -2px;
+        }
+
+        .pin-logo-plus {
+          color: #1fb25a;
+          font-size: 36px;
+          margin-left: 1px;
+        }
+
+        .pin-title {
+          margin: 0 0 18px;
+          font-size: 13px;
+          font-weight: 700;
+          color: #4a5260;
+        }
+
+        .pin-dots {
+          display: flex;
+          gap: 14px;
+          margin-bottom: 44px;
+        }
+
+        .dot {
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          border: 1.5px solid #3cc6b5;
+          background: transparent;
+          transition: background 0.12s;
+        }
+
+        .dot.filled {
+          background: #3cc6b5;
+        }
+
+        .keypad {
+          display: grid;
+          grid-template-columns: repeat(3, 64px);
+          gap: 20px 28px;
+          justify-content: center;
+        }
+
+        .key {
+          width: 64px;
+          height: 64px;
+          border-radius: 50%;
+          border: 1px solid #d9dde3;
+          background: white;
+          color: #4a5260;
+          font-size: 28px;
+          font-weight: 300;
+          display: grid;
+          place-items: center;
+          padding: 0;
+          transition: background 0.1s;
+        }
+
+        .key:active {
+          background: #e6f7f5;
+        }
+
+        .key-empty {
+          width: 64px;
+          height: 64px;
+        }
+
+        .key-back {
+          width: 64px;
+          height: 64px;
+          border: none;
+          background: transparent;
+          color: #354052;
+          display: grid;
+          place-items: center;
+          padding: 0;
+        }
+
+        .pin-forgot {
+          margin-top: 40px;
+          border: none;
+          background: transparent;
+          color: #3cc6b5;
+          font-size: 13px;
+          text-decoration: underline;
+          padding: 4px 8px;
+        }
+
+        .home-indicator {
+          position: absolute;
+          bottom: 10px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 134px;
+          height: 5px;
+          border-radius: 3px;
+          background: #111;
         }
 
         /* HEADER */
@@ -481,7 +725,6 @@ export default function CloudPocketPage() {
           font-weight: 700;
           color: #000;
           letter-spacing: -0.3px;
-          opacity: 0.7;
         }
 
         /* 365 */
@@ -607,6 +850,6 @@ export default function CloudPocketPage() {
           }
         }
       `}</style>
-    </main>
+    </>
   );
 }
