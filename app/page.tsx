@@ -29,16 +29,25 @@ const categories = [
   },
 ];
 
-const YEAR_365_AMOUNT = 11282;
+const YEAR_365_AMOUNT = 36500;
 
 const totalAmount =
   categories.reduce((sum, c) => sum + c.amount, 0) + YEAR_365_AMOUNT;
 
-const formatBaht = (n: number) =>
-  `฿ ${n.toLocaleString("th-TH", {
+const formatNumber = (n: number) =>
+  n.toLocaleString("th-TH", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  })}`;
+  });
+
+function Money({ value }: { value: number }) {
+  return (
+    <>
+      <span className="currency">฿</span>
+      {formatNumber(value)}
+    </>
+  );
+}
 
 function Icon({ name, size = 25 }: { name: string; size?: number }) {
   const common = {
@@ -179,7 +188,9 @@ export default function CloudPocketPage() {
 
           <div className="cashbox-info">
             <p>Cashbox</p>
-            <div className="balance-mask">{formatBaht(totalAmount)}</div>
+            <div className="balance-mask">
+              <Money value={totalAmount} />
+            </div>
           </div>
 
           <span className="arrow">›</span>
@@ -206,7 +217,7 @@ export default function CloudPocketPage() {
               <div className="category-title">{category.title}</div>
 
               <div className="category-amount">
-                {formatBaht(category.amount)}
+                <Money value={category.amount} />
               </div>
             </button>
           ))}
@@ -228,7 +239,9 @@ export default function CloudPocketPage() {
 
             <div className="category-title">365 💰</div>
 
-            <div className="category-amount">{formatBaht(YEAR_365_AMOUNT)}</div>
+            <div className="category-amount">
+              <Money value={YEAR_365_AMOUNT} />
+            </div>
           </button>
         </div>
       </section>
@@ -290,6 +303,13 @@ export default function CloudPocketPage() {
           padding-bottom: 100px;
           background: white;
           overflow: hidden;
+        }
+
+        /* สัญลักษณ์สกุลเงิน (฿) ให้เล็กกว่าตัวเลข */
+        .currency {
+          font-size: 0.65em;
+          font-weight: 600;
+          margin-right: 4px;
         }
 
         /* HEADER */
@@ -405,6 +425,7 @@ export default function CloudPocketPage() {
           font-size: 18px;
           font-weight: 700;
           color: #354052;
+          opacity: 0.7;
         }
 
         .arrow {
@@ -460,6 +481,7 @@ export default function CloudPocketPage() {
           font-weight: 700;
           color: #000;
           letter-spacing: -0.3px;
+          opacity: 0.7;
         }
 
         /* 365 */
