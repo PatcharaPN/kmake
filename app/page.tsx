@@ -4,30 +4,41 @@ import { useState } from "react";
 
 const categories = [
   {
-    title: "ฉุกเฉิน/หาหมอ 👨🏻‍⚕️",
+    title: "",
     type: "emergency",
-    color: "emergency",
-    icon: "✚",
+    amount: 2000,
+    image: "/images/emergency.png",
   },
   {
-    title: "เงินเก็บ 💰",
+    title: "",
     type: "saving",
-    color: "saving",
-    icon: "🐻",
+    amount: 289210,
+    image: "/images/saving.png",
   },
   {
-    title: "ค่ากิน ✨",
+    title: "",
     type: "food",
-    color: "food",
-    icon: "🍔",
+    amount: 0,
+    image: "/images/food.png",
   },
   {
-    title: "ค่าน้ำมัน/เดินทาง",
+    title: "",
     type: "travel",
-    color: "travel",
-    icon: "🚆",
+    amount: 0,
+    image: "/images/travel.png",
   },
 ];
+
+const YEAR_365_AMOUNT = 11282;
+
+const totalAmount =
+  categories.reduce((sum, c) => sum + c.amount, 0) + YEAR_365_AMOUNT;
+
+const formatBaht = (n: number) =>
+  `฿ ${n.toLocaleString("th-TH", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
 
 function Icon({ name, size = 25 }: { name: string; size?: number }) {
   const common = {
@@ -110,8 +121,6 @@ function Icon({ name, size = 25 }: { name: string; size?: number }) {
 
 export default function CloudPocketPage() {
   const [activeTab, setActiveTab] = useState("Cloud Pocket");
-  const [showBalance, setShowBalance] = useState(false);
-
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const tabs = [
@@ -162,25 +171,19 @@ export default function CloudPocketPage() {
 
       {/* MAIN CONTENT */}
       <section className="content">
-        {/* CASHBOX */}
-        <button
-          className="cashbox"
-          onClick={() => setShowBalance(!showBalance)}
-        >
+        {/* CASHBOX (รวมยอดทุกรายการ) */}
+        <div className="cashbox">
           <div className="cashbox-logo">
             <span>m</span>
           </div>
 
           <div className="cashbox-info">
             <p>Cashbox</p>
-
-            <div className="balance-mask">
-              {showBalance ? "฿ 264,100.00" : ""}
-            </div>
+            <div className="balance-mask">{formatBaht(totalAmount)}</div>
           </div>
 
           <span className="arrow">›</span>
-        </button>
+        </div>
 
         {/* CATEGORY GRID */}
         <div className="category-grid">
@@ -190,40 +193,21 @@ export default function CloudPocketPage() {
               className="category-card"
               onClick={() => setSelectedCategory(category.title)}
             >
-              <div className={`category-art ${category.color}`}>
-                {category.type === "emergency" && (
-                  <div className="shield">
-                    <div className="plus">+</div>
-                  </div>
-                )}
-
-                {category.type === "saving" && (
-                  <div className="saving-art">
-                    <div className="cloud-character">☁️</div>
-                    <div className="piggy-bank">🐷</div>
-                    <span className="saving-text">
-                      เก็บ
-                      <br />
-                      เงิน
-                    </span>
-                  </div>
-                )}
-
-                {category.type === "food" && (
-                  <div className="food-art">
-                    <span>🥤</span>
-                    <span>🍔</span>
-                  </div>
-                )}
-
-                {category.type === "travel" && (
-                  <div className="travel-art">🚆</div>
-                )}
-              </div>
+              <div
+                className="category-art"
+                style={{
+                  backgroundImage: `url(${category.image})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  backgroundRepeat: "no-repeat",
+                }}
+              />
 
               <div className="category-title">{category.title}</div>
 
-              <div className="pattern" />
+              <div className="category-amount">
+                {formatBaht(category.amount)}
+              </div>
             </button>
           ))}
 
@@ -232,9 +216,19 @@ export default function CloudPocketPage() {
             className="category-card year-card"
             onClick={() => setSelectedCategory("365")}
           >
-            <div className="year-art">3</div>
+            <div
+              className="year-art"
+              style={{
+                backgroundImage: "url(/images/365.jpg)",
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+              }}
+            />
 
             <div className="category-title">365 💰</div>
+
+            <div className="category-amount">{formatBaht(YEAR_365_AMOUNT)}</div>
           </button>
         </div>
       </section>
@@ -370,7 +364,6 @@ export default function CloudPocketPage() {
           min-height: 100px;
           padding: 16px;
           background: white;
-          border: none;
           border-radius: 27px;
           gap: 14px;
           margin-bottom: 22px;
@@ -409,19 +402,9 @@ export default function CloudPocketPage() {
 
         .balance-mask {
           min-height: 23px;
-          width: 155px;
-          max-width: 100%;
-          border-radius: 5px;
-          font-size: 15px;
-          color: #5d9c9b;
-          background-color: #e2e4e9;
-          background-image: repeating-linear-gradient(
-            135deg,
-            transparent,
-            transparent 6px,
-            #d9dce3 6px,
-            #d9dce3 12px
-          );
+          font-size: 18px;
+          font-weight: 700;
+          color: #354052;
         }
 
         .arrow {
@@ -446,7 +429,10 @@ export default function CloudPocketPage() {
           border: 1px solid rgba(255, 255, 255, 0.8);
           border-radius: 28px;
           overflow: hidden;
-          background: white;
+          background-color: white;
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
           text-align: left;
           box-shadow: 0 3px 12px rgba(120, 180, 180, 0.08);
           color: #828c9b;
@@ -454,101 +440,9 @@ export default function CloudPocketPage() {
 
         .category-art {
           height: 112px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          background-color: #d7faf1;
           position: relative;
           overflow: hidden;
-        }
-
-        /* EMERGENCY */
-
-        .emergency {
-          background: linear-gradient(135deg, #d7faf1, #75dfe0);
-        }
-
-        .shield {
-          width: 100px;
-          height: 100px;
-          background: #3bb5b9;
-          clip-path: polygon(50% 0, 100% 20%, 100% 65%, 50% 100%, 0 65%, 0 20%);
-          display: grid;
-          place-items: center;
-        }
-
-        .plus {
-          width: 54px;
-          height: 54px;
-          border-radius: 50%;
-          background: white;
-          color: #3bb5b9;
-          font-size: 43px;
-          font-weight: bold;
-          display: grid;
-          place-items: center;
-          line-height: 1;
-        }
-
-        /* SAVING */
-
-        .saving {
-          background: linear-gradient(135deg, #119daf, #42c4c8);
-        }
-
-        .saving-art {
-          width: 100%;
-          height: 100%;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          position: relative;
-        }
-
-        .cloud-character {
-          font-size: 75px;
-          position: absolute;
-          left: 20px;
-          top: 3px;
-        }
-
-        .piggy-bank {
-          font-size: 65px;
-          position: absolute;
-          right: 20px;
-          bottom: 0;
-        }
-
-        .saving-text {
-          position: absolute;
-          top: 20px;
-          right: 10px;
-          color: #fff5a1;
-          font-weight: bold;
-          font-size: 17px;
-        }
-
-        /* FOOD */
-
-        .food {
-          background: linear-gradient(135deg, #ffdfc4, #ffb58b);
-        }
-
-        .food-art {
-          display: flex;
-          align-items: center;
-          gap: 2px;
-          font-size: 65px;
-        }
-
-        /* TRAVEL */
-
-        .travel {
-          background: linear-gradient(135deg, #d7faf6, #a0e7e5);
-        }
-
-        .travel-art {
-          font-size: 90px;
-          transform: scaleX(1.2);
         }
 
         /* CARD TEXT */
@@ -560,19 +454,12 @@ export default function CloudPocketPage() {
           white-space: normal;
         }
 
-        .pattern {
-          height: 21px;
-          margin: 9px 12px 12px;
-          border-radius: 5px;
-          background-color: #e3e5ea;
-          background-image: radial-gradient(
-            ellipse at center,
-            transparent 35%,
-            #f5f6f8 37%,
-            #f5f6f8 43%,
-            transparent 45%
-          );
-          background-size: 26px 17px;
+        .category-amount {
+          padding: 4px 12px 16px;
+          font-size: 18px;
+          font-weight: 700;
+          color: #000;
+          letter-spacing: -0.3px;
         }
 
         /* 365 */
@@ -584,13 +471,7 @@ export default function CloudPocketPage() {
 
         .year-art {
           height: 112px;
-          background: linear-gradient(135deg, #d8ffd1, #c1f7e8);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 75px;
-          font-weight: 300;
-          color: #a6cbb6;
+          background-color: #d8ffd1;
         }
 
         /* BOTTOM NAVIGATION */
@@ -697,6 +578,10 @@ export default function CloudPocketPage() {
 
           .category-title {
             font-size: 14px;
+          }
+
+          .category-amount {
+            font-size: 16px;
           }
         }
       `}</style>
